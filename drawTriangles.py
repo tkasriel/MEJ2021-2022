@@ -1,5 +1,6 @@
 import random
 
+
 WIDTH = 800
 HEIGHT = int(float(WIDTH) / 3.5 * 2)
 arr = [0.5 for i in range(8)]
@@ -7,18 +8,14 @@ tri_size = 30
 tri_top = round(tri_size * sqrt(3))
 xs = [11, 12, 13, 14, 15, 16, 13, 14]
 ys = [3, 3, 3, 3, 3, 3, 4, 2]
-COLORS = 4
-seen = []
 
 
 def setup():
 	global WIDTH, HEIGHT, arr, tri_size, tri_top
 	size(WIDTH, HEIGHT)
 	background(0,0,0)
-	# redraw()
-	# update()
-	adj = generateTriangles()
-	compareTriangles(adj)
+	redraw()
+	update()
 
 def update():
 	
@@ -128,81 +125,6 @@ def debugTriangles():
 		else:
 			stroke(255, 0, 0)
 		rect(x, y, 1, 1)
-
-def generateTriangles():
-	adj = []
-	for i in range(COLORS ** 8):
-		# Generate string corresponding to octahedron
-		string = ""
-		for j in range(8):
-			string += str((i // (COLORS ** j)) % COLORS)
-
-		
-		triangle = []
-		for j in range(8):
-
-			# We'll now compute the adjacency matrix for each side
-			adj1 = int(string[j-1])
-			adj2 = int(string[(j+1)%8])
-			adj3 = int(string[(j+5)%8] if j % 2 == 1 else string[(j+3)%8])
-
-			# Normalize
-			temp = sorted([adj1, adj2, adj3])
-
-			# [adj1, adj2, adj3, self] with adj1 <= adj2 <= adj3
-			temp.append(int(string[j]))
-			triangle.append(temp)
-
-		# Normalize
-		triangle.sort(key=triangleComp)
-		adj.append(triangle)
-
-	return adj
-
-def compareTriangles(adj):
-	for triangle in adj:
-		if not checkSame(triangle):
-			seen.append(triangle)
-	countTriangles()
-
-
-def countTriangles():
-	triangles = {}
-	for shape in seen:
-		colors = [0 for i in range(COLORS)]
-		for side in shape:
-			colors[side[3]] += 1
-		string = ""
-		for i,color in enumerate(colors):
-			string += str(color)+"s"+str(i)+":"
-		if not(string in triangles.keys()):
-			triangles[string] = 0
-		triangles[string] += 1
-
-	keys = sorted(triangles.keys())
-	for key in keys:
-		print(key+" : " + str(triangles[key]))
-
-
-
-
-def triangleComp(side):
-	return side[0] * 1000 + side[1] * 100 + side[2] * 10 + side[3]
-
-
-def checkSame(triangle):
-	for seenTriangle in seen:
-		same = True
-		for i, side in enumerate(seenTriangle):
-			for j, adj in enumerate(side):
-				adj = side[j]
-				if triangle[i][j] != side[j]:
-					same = False
-		if same:
-			return True
-
-	return False
-
 
 
 def mouseClicked():
