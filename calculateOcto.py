@@ -1,30 +1,66 @@
 import time
 from tqdm import tqdm
-import sys
+import sys, os
 
 
 COLORS = 3
 deltaTime = 0.5
 seen = set()
-
+bufferFile = "buffer.csv"
 
 def main():
 	global COLORS, deltaTime, seen
-	adj = generateShapes()
-	compareShapes(adj)
+	init()
+	generateShapes()
+	compareShapes()
 	countShapes()
+	cleanup()
+
+def init():
+	try:
+		file = open(bufferFile, "x")
+		file.close()
+	except FileExistsError:
+		# file was already created
+		# so, we erase everything in the file
+		print ("Found existing buffer file, clearing contents...")
+		file = open(bufferFile, "w")
+		file.close()
+
+def cleanup():
+	try:
+		os.remove(bufferFile)
+	except FileNotFoundError:
+		print ("buffer file not found")
+
+
+
 
 def generateShapes():
 	adj = []
 	lastTime = 0
+	string = ["" for _ in range(8)]
+	print ("Creating shapes...")
 	for i in tqdm(range(COLORS ** 8)):
-		# Generate string corresponding to octahedron
-		string = ""
-		for j in range(8):
-			string += str((i // (COLORS ** j)) % COLORS)
 
+		# If size is too large, we print to a buffer file
+		if len(adj) > 1E6:
+			print ("\n### Adjacency list is too large, dumping to buffer ###")
+			file = open(bufferFile, "a")
+			for i in tqdm(range(len(adj))):
+				shape = adj[i]
+				for side in shape:
+					file.write(",".join(map(lambda x: str(x), side)) + "\n")
+				file.write("\n")
+			file.close()
+			adj = []
+			print ("\nBack to creating shapes...")
+
+		# Generate string corresponding to octahedron
+		for j in range(8):
+			string[j] = str((i // (COLORS ** j)) % COLORS)
 		
-		triangle = []
+		shape = []
 		for j in range(8):
 
 			# We'll now compute the adjacency matrix for each side
@@ -37,13 +73,20 @@ def generateShapes():
 
 			# [adj1, adj2, adj3, self] with adj1 <= adj2 <= adj3
 			temp.append(int(string[j]))
-			triangle.append(temp)
+			shape.append(temp)
 
 		# Normalize
-		triangle.sort(key=comp)
-		adj.append(triangle)
+		shape.sort(key=comp)
+		adj.append(shape)
 
-	return adj
+	print ("\nOne last dump to buffer")
+	file = open(bufferFile, "a")
+	for i in tqdm(range(len(adj))):
+		shape = adj[i]
+		for side in shape:
+			file.write(",".join(map(lambda x: str(x), side)) + "\n")
+		file.write("\n")
+	file.close()
 
 def comp(a):
 	return a[0] * (COLORS+1) ** 3 + a[1] * (COLORS+1) ** 2 + a[2] * (COLORS+1) + a[3]
@@ -90,10 +133,15 @@ def countShapes():
 if __name__ == "__main__":
 	if len(sys.argv) > 1:
 		inp = sys.argv[1]
+		if inp == "--help":
+			print ("######### Brute Force Implementation to solve our problem in MeJ 2021-22 #########")
+			print ("This script can be run with python3.")
+			print ("It takes one optional command-line argument, number of colors")
+			sys.exit(0)
 		try:
 			inp = int(inp)
 		except Exception:
-			raise ValueError("Command-line argument must be a number")
+			raise ValueError("Number of colors must be a number")
 
 		if inp <= 1:
 			raise ValueError("Number of colors must be at least 2")
