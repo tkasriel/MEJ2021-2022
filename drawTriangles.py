@@ -8,25 +8,32 @@ tri_size = 30
 tri_top = round(tri_size * sqrt(3))
 xs = [11, 12, 13, 14, 15, 16, 13, 14]
 ys = [3, 3, 3, 3, 3, 3, 4, 2]
+x2s = [16, 17, 18, 19, 20, 21, 18, 19]
+y2s = [2, 2, 2, 2, 2, 2, 3, 1]
 
 
 def setup():
 	global WIDTH, HEIGHT, arr, tri_size, tri_top
 	size(WIDTH, HEIGHT)
-	background(0,0,0)
+	background(255,255,255)
 	redraw()
 	update()
 
 def update():
 	
 	for y in range(10):
-		for x in range(30):
+		for x in range(-1, 30):
 			# Coloring
-			index = (x + 4*y) % 8
+			index = (x + 5*y) % 8
+			# noFill ()
+			# noStroke()
 			fill(arr[index] * 255, arr[index] * 255, arr[index] * 255)
 			for i in range(len(xs)):
 				if x == xs[i] and y == ys[i]:
+					# stroke(0,0,0)
 					fill(arr[index]*100, arr[index] * 255, arr[index]*255)
+				if x == x2s[i] and y == y2s[i]:
+					fill(arr[index]*255, arr[index] * 100, arr[index]*100)
 
 			# /\ triangle
 			if (x+y) % 2 == 0:
@@ -164,9 +171,8 @@ def mouseClicked():
 				if ratio < 1.0 / sqrt(3):
 					# stroke(255, 0, 0)
 					topX = float(topX) + 0.5
-	index = (int(2 * topX) + 4*floor(topY)) % 8
+	index = (int(2 * topX) + 5*floor(topY)) % 8
 	arr[index] = 1 if arr[index] == 0.5 else 0.5
-	findTriangle()
 	update()
 
 		
